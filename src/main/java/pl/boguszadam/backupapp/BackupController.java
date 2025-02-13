@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class HelloController implements Initializable {
+public class BackupController implements Initializable {
     @FXML
     private Label welcomeText;
 
@@ -49,8 +49,8 @@ public class HelloController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        fillDriveLetters(sourceDrives, "\\burn");
-        fillDriveLetters(destinationDrives, "\\ADE");
+        fillDriveLetters(sourceDrives, "burn");
+        fillDriveLetters(destinationDrives, "ADE");
     }
 
     private void fillBackupList(ListView<String> backupList, String pathToBackups) throws IOException {
