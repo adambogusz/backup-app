@@ -11,7 +11,7 @@ public class BackupApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(BackupApplication.class.getResource("backup-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         stage.setTitle("Backup");
         stage.setScene(scene);
         stage.show();

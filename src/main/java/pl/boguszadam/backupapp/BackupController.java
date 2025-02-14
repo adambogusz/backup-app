@@ -56,7 +56,9 @@ public class BackupController implements Initializable {
     private void fillBackupList(ListView<String> backupList, String pathToBackups) throws IOException {
         try (Stream<Path> files = Files.list(Path.of(pathToBackups))) {
             files.filter(getExtentionPredicate())
-                    .forEach(f -> backupList.getItems().add(f.toString()));
+                    .forEach(f -> {
+                        backupList.getItems().add(f.toString());
+                    });
         }
     }
 
