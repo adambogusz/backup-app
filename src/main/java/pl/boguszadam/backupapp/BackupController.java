@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class BackupController implements Initializable {
     @FXML
-    private Label welcomeText;
+    private Label statusText;
 
     @FXML
     private ComboBox<String> sourceDrives;
@@ -39,8 +39,8 @@ public class BackupController implements Initializable {
     private final String extensionOfMainArchive = ".001";
 
     @FXML
-    protected void onHelloButtonClick()  {
-        welcomeText.setText("Welcome to JavaFX Application!");
+    protected void onBackupButtonClick()  {
+        statusText.setText("To jeszcze nie działa, ale z czasem zacznie:)");
     }
 
     @FXML
@@ -56,11 +56,11 @@ public class BackupController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         fillDriveLetters(sourceDrives, "burn");
-        fillDriveLetters(destinationDrives, "ADE");
+        fillDriveLetters(destinationDrives, "");
     }
 
     private void fillBackupList(ListView<String> backupList, List<Archives> archivesBackupList, String pathToBackups) throws IOException {
-        try (Stream<Path> files = Files.list(Path.of(pathToBackups))) {
+        try (Stream<Path> files = Files.list(Path.of(pathToBackups.substring(0, pathToBackups.lastIndexOf(" ("))))) {
             files
                     .filter(getExtentionPredicate())
                     .forEach(archive -> {

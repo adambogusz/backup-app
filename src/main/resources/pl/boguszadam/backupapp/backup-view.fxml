@@ -25,6 +25,6 @@
         <ListView fx:id="destinationBackupList" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
     </GridPane>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Wykonaj backup!" onAction="#onHelloButtonClick"/>
+    <Label fx:id="statusText"/>
+    <Button text="Wykonaj backup!" onAction="#onBackupButtonClick"/>
 </VBox>
