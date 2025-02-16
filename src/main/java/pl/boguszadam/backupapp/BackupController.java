@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -32,6 +34,10 @@ public class BackupController implements Initializable {
     @FXML
     private ListView<String> destinationBackupList;
 
+    private final List<Archives> sourceArchivesBackupList = new ArrayList<>();
+    private final List<Archives> destinationArchivesBackupList = new ArrayList<>();
+    private final String extensionOfMainArchive = ".001";
+
     @FXML
     protected void onHelloButtonClick()  {
         welcomeText.setText("Welcome to JavaFX Application!");
@@ -39,12 +45,12 @@ public class BackupController implements Initializable {
 
     @FXML
     protected void onSourceDriveChange() throws IOException {
-        fillBackupList(sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem());
+        fillBackupList(sourceBackupList, sourceArchivesBackupList, sourceDrives.getSelectionModel().getSelectedItem());
     }
 
     @FXML
     protected void onDestinationDriveChange() throws IOException {
-        fillBackupList(destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem());
+        fillBackupList(destinationBackupList, destinationArchivesBackupList, destinationDrives.getSelectionModel().getSelectedItem());
     }
 
     @Override
@@ -53,22 +59,34 @@ public class BackupController implements Initializable {
         fillDriveLetters(destinationDrives, "ADE");
     }
 
-    private void fillBackupList(ListView<String> backupList, String pathToBackups) throws IOException {
+    private void fillBackupList(ListView<String> backupList, List<Archives> archivesBackupList, String pathToBackups) throws IOException {
         try (Stream<Path> files = Files.list(Path.of(pathToBackups))) {
-            files.filter(getExtentionPredicate())
-                    .forEach(f -> {
-                        backupList.getItems().add(f.toString());
+            files
+                    .filter(getExtentionPredicate())
+                    .forEach(archive -> {
+                        try {
+                            archivesBackupList.add(new Archives(archive));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     });
         }
+        archivesBackupList.forEach(archive -> backupList.getItems().add(archive.toString()));
     }
 
     private Predicate<Path> getExtentionPredicate() {
-        return f -> f.toString().toLowerCase().endsWith(".001");
+        return f -> f.toString().toLowerCase().endsWith(extensionOfMainArchive);
     }
 
     private void fillDriveLetters(ComboBox<String> drives, String sourcePath) {
         Arrays.stream(File.listRoots()).toList().stream()
                 .filter(drive -> Files.exists(Path.of(drive + sourcePath)))
-                .forEach(drive -> drives.getItems().add(drive.toString() + sourcePath));
+                .forEach(drive -> {
+                    try {
+                        drives.getItems().add(drive.toString() + sourcePath + " (wolne: " + (Files.getFileStore(drive.toPath()).getUsableSpace() / (1024 * 1024 * 1024)) + " GB)");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }

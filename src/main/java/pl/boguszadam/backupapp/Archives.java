@@ -1,50 +1,50 @@
 package pl.boguszadam.backupapp;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class Archives {
-    private String path;
-    private String size;
-    private Map<Path, Integer> mapOfFiles = new HashMap<>();
+    private final Path pathOfZipFile;
+    private int size;
+    private final Map<Path, Integer> mapOfFiles = new HashMap<>();
 
-    public Archives(String path, String size, Map<Path, Integer> mapOfFiles) {
-        this.path = path;
+    public Archives(Path pathOfZipFile, int size) throws IOException {
+        this.pathOfZipFile = pathOfZipFile;
         this.size = size;
-        this.mapOfFiles = mapOfFiles;
+        setMapOfFiles();
+        setSizeOfMapArchive();
     }
 
-    public String getPath() {
-        return path;
+    public Archives(Path pathOfZipFile) throws IOException {
+        this(pathOfZipFile, 0);
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    private void setMapOfFiles() throws IOException {
+        try(Stream<Path> files = Files.list(Path.of(pathOfZipFile.getParent().toString()))) {
+            files
+                    .filter(file -> file.toString().contains(pathOfZipFile.toString().substring(0, pathOfZipFile.toString().lastIndexOf('.'))))
+                    .forEach(file -> {
+                        try {
+                            mapOfFiles.put(file, (int) Files.size(file) / 1024 / 1024);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public Map<Path, Integer> getMapOfFiles() {
-        return mapOfFiles;
-    }
-
-    public void setMapOfFiles(Map<Path, Integer> mapOfFiles) {
-        this.mapOfFiles = mapOfFiles;
+    public void setSizeOfMapArchive() {
+        size = mapOfFiles.values().stream()
+                .reduce(0, Integer::sum);
     }
 
     @Override
     public String toString() {
-        return "Backup{" +
-                "path='" + path + '\'' +
-                ", size='" + size + '\'' +
-                ", listOfFiles=" + mapOfFiles +
-                '}';
+        return pathOfZipFile +
+                " (" + size + "MB)";
     }
 }
