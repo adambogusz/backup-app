@@ -41,6 +41,13 @@ public class BackupController implements Initializable {
     @FXML
     protected void onBackupButtonClick()  {
         statusText.setText("To jeszcze nie działa, ale z czasem zacznie:)");
+        sourceArchivesBackupList.forEach(archive -> archive.getMapOfFiles().keySet().forEach(archivePart -> {
+            try {
+                Files.move(archivePart, Path.of(destinationDrives.getSelectionModel().getSelectedItem().substring(0, destinationDrives.getSelectionModel().getSelectedItem().lastIndexOf(" (")) + "\\" + archivePart.getFileName()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 
     @FXML
@@ -56,7 +63,7 @@ public class BackupController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         fillDriveLetters(sourceDrives, "burn");
-        fillDriveLetters(destinationDrives, "");
+        fillDriveLetters(destinationDrives, "burn\\burned");
     }
 
     private void fillBackupList(ListView<String> backupList, List<Archives> archivesBackupList, String pathToBackups) throws IOException {

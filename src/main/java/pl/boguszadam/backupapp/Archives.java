@@ -1,5 +1,7 @@
 package pl.boguszadam.backupapp;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+@Getter
 public class Archives {
     private final Path pathOfZipFile;
     private int size;
