@@ -46,7 +46,7 @@ public class BackupController implements Initializable {
                     try {
                         if(archivePackageSource.getSize() * 2L > getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
                             ArchiveDestination oldestArchive = destinationArchivePackageBackupList.stream()
-                                    .min((archive1, archive2) -> archive1.getDateOfBackup().compareTo(archive2.getDateOfBackup()))
+                                    .min(Comparator.comparing(ArchiveDestination::getDateOfBackup))
                                     .orElse(new ArchiveDestination(Path.of(destinationDrives.getSelectionModel().getSelectedItem(), "Backup2DVD 2026-02-22 04;00;26 (Pełna).zip")));
                             oldestArchive.delete();
                         }
