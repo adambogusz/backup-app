@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -38,7 +35,7 @@ public class BackupController implements Initializable {
 
     private final List<ArchiveSource> sourceArchivePackageBackupList = new ArrayList<>();
     private final List<ArchiveDestination> destinationArchivePackageBackupList = new ArrayList<>();
-    private final String extensionOfMainArchive = ".001";
+    private final String extensionOfMainArchive = ".zip";
 
     @FXML
     protected void onBackupButtonClick() {
@@ -47,18 +44,17 @@ public class BackupController implements Initializable {
         sourceArchivePackageBackupList
                 .forEach(archivePackageSource -> {
                     try {
-                        if(archivePackageSource.getSize() * 2L < getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
-                            destinationArchivePackageBackupList
-                                    .forEach(ArchiveDestination::delete);
+                        if(archivePackageSource.getSize() * 2L > getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
+                            ArchiveDestination oldestArchive = destinationArchivePackageBackupList.stream()
+                                    .min((archive1, archive2) -> archive1.getDateOfBackup().compareTo(archive2.getDateOfBackup()))
+                                    .orElse(new ArchiveDestination(Path.of(destinationDrives.getSelectionModel().getSelectedItem(), "Backup2DVD 2026-02-22 04;00;26 (Pełna).zip")));
+                            oldestArchive.delete();
                         }
                         archivePackageSource.move(Path.of(destinationDrives.getSelectionModel().getSelectedItem()));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
-//        sourceArchivePackageBackupList.stream()
-//                .map(ArchivePackage::getMapOfFiles)
-//                .forEach(file ->);
     }
 
     @FXML
