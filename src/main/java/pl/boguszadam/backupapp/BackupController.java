@@ -48,8 +48,9 @@ public class BackupController implements Initializable {
                     try {
                         if(archivePackageSource.getSize() * 2L < getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
                             destinationArchivePackageBackupList
-                                    .forEach(archiveDestination -> System.out.println(archiveDestination.getSize()));
+                                    .forEach(ArchiveDestination::delete);
                         }
+                        archivePackageSource.move(Path.of(destinationDrives.getSelectionModel().getSelectedItem()));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
