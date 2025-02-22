@@ -1,4 +1,4 @@
-package pl.boguszadam.backupapp;
+package pl.boguszadam.backupapp.file;
 
 import lombok.Getter;
 
@@ -10,29 +10,24 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Getter
-public class Archives {
+public class ArchivePackage implements Archive {
     private final Path pathOfZipFile;
-    private int size;
-    private final Map<Path, Integer> mapOfFiles = new HashMap<>();
+    private long size;
+    private Map<Path, Long> mapOfFiles = new HashMap<>();
 
-    public Archives(Path pathOfZipFile, int size) throws IOException {
+    public ArchivePackage(Path pathOfZipFile) throws IOException {
         this.pathOfZipFile = pathOfZipFile;
-        this.size = size;
-        setMapOfFiles();
-        setSizeOfMapArchive();
+        addArchivesToMap();
+        this.size = size();
     }
 
-    public Archives(Path pathOfZipFile) throws IOException {
-        this(pathOfZipFile, 0);
-    }
-
-    private void setMapOfFiles() throws IOException {
+    private void addArchivesToMap() throws IOException {
         try(Stream<Path> files = Files.list(Path.of(pathOfZipFile.getParent().toString()))) {
             files
                     .filter(file -> file.toString().contains(pathOfZipFile.toString().substring(0, pathOfZipFile.toString().lastIndexOf('.'))))
                     .forEach(file -> {
                         try {
-                            mapOfFiles.put(file, (int) Files.size(file) / 1024 / 1024);
+                            mapOfFiles.put(file, Files.size(file) / 1024 / 1024);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -40,14 +35,15 @@ public class Archives {
         }
     }
 
-    public void setSizeOfMapArchive() {
-        size = mapOfFiles.values().stream()
-                .reduce(0, Integer::sum);
-    }
-
     @Override
     public String toString() {
         return pathOfZipFile +
                 " (" + size + "MB)";
+    }
+
+    @Override
+    public long size() {
+        return mapOfFiles.values().stream()
+                .reduce(0L, Long::sum);
     }
 }

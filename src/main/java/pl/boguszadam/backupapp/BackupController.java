@@ -5,16 +5,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import pl.boguszadam.backupapp.file.ArchiveDestination;
+import pl.boguszadam.backupapp.file.ArchivePackage;
+import pl.boguszadam.backupapp.file.ArchiveSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -34,30 +35,38 @@ public class BackupController implements Initializable {
     @FXML
     private ListView<String> destinationBackupList;
 
-    private final List<Archives> sourceArchivesBackupList = new ArrayList<>();
-    private final List<Archives> destinationArchivesBackupList = new ArrayList<>();
+    private final List<ArchiveSource> sourceArchivePackageBackupList = new ArrayList<>();
+    private final List<ArchiveDestination> destinationArchivePackageBackupList = new ArrayList<>();
     private final String extensionOfMainArchive = ".001";
 
     @FXML
-    protected void onBackupButtonClick()  {
-        statusText.setText("To jeszcze nie działa, ale z czasem zacznie:)");
-        sourceArchivesBackupList.forEach(archive -> archive.getMapOfFiles().keySet().forEach(archivePart -> {
-            try {
-                Files.move(archivePart, Path.of(destinationDrives.getSelectionModel().getSelectedItem().substring(0, destinationDrives.getSelectionModel().getSelectedItem().lastIndexOf(" (")) + "\\" + archivePart.getFileName()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
+    protected void onBackupButtonClick() throws IOException {
+        statusText.setText("Już kopiujemy:)");
+
+        sourceArchivePackageBackupList
+                .forEach(archivePackageSource -> {
+                    try {
+                        if(archivePackageSource.getSize() * 2L < getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
+                            destinationArchivePackageBackupList
+                                    .forEach(archiveDestination -> System.out.println(archiveDestination.getSize()));
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+//        sourceArchivePackageBackupList.stream()
+//                .map(ArchivePackage::getMapOfFiles)
+//                .forEach(file ->);
     }
 
     @FXML
     protected void onSourceDriveChange() throws IOException {
-        fillBackupList(sourceBackupList, sourceArchivesBackupList, sourceDrives.getSelectionModel().getSelectedItem());
+        fillSourceBackupList(sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem());
     }
 
     @FXML
     protected void onDestinationDriveChange() throws IOException {
-        fillBackupList(destinationBackupList, destinationArchivesBackupList, destinationDrives.getSelectionModel().getSelectedItem());
+        fillDestinationBackupList(destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem());
     }
 
     @Override
@@ -66,19 +75,37 @@ public class BackupController implements Initializable {
         fillDriveLetters(destinationDrives, "burn\\burned");
     }
 
-    private void fillBackupList(ListView<String> backupList, List<Archives> archivesBackupList, String pathToBackups) throws IOException {
-        try (Stream<Path> files = Files.list(Path.of(pathToBackups.substring(0, pathToBackups.lastIndexOf(" ("))))) {
+    private void fillSourceBackupList(ListView<String> backupList, String pathWithBackups) throws IOException {
+        try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
             files
                     .filter(getExtentionPredicate())
-                    .forEach(archive -> {
+                    .forEach(archivePath -> {
                         try {
-                            archivesBackupList.add(new Archives(archive));
+                            sourceArchivePackageBackupList.add(new ArchiveSource(archivePath));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     });
         }
-        archivesBackupList.forEach(archive -> backupList.getItems().add(archive.toString()));
+        sourceArchivePackageBackupList
+                .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
+
+    }
+
+    private void fillDestinationBackupList(ListView<String> backupList, String pathWithBackups) throws IOException {
+        try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
+            files
+                    .filter(getExtentionPredicate())
+                    .forEach(archivePath -> {
+                        try {
+                            destinationArchivePackageBackupList.add(new ArchiveDestination(archivePath));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }
+        destinationArchivePackageBackupList
+                .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
     }
 
     private Predicate<Path> getExtentionPredicate() {
@@ -89,11 +116,15 @@ public class BackupController implements Initializable {
         Arrays.stream(File.listRoots()).toList().stream()
                 .filter(drive -> Files.exists(Path.of(drive + sourcePath)))
                 .forEach(drive -> {
-                    try {
-                        drives.getItems().add(drive.toString() + sourcePath + " (wolne: " + (Files.getFileStore(drive.toPath()).getUsableSpace() / (1024 * 1024 * 1024)) + " GB)");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    drives.getItems().add(drive.toString() + sourcePath);
                 });
+    }
+
+    private long getDriveEmptySpaceGB(File drive) throws IOException {
+        return getDriveEmptySpaceMB(drive) / 1024;
+    }
+
+    private long getDriveEmptySpaceMB(File drive) throws IOException {
+        return Files.getFileStore(drive.toPath()).getUsableSpace() / 1024 / 1024;
     }
 }
