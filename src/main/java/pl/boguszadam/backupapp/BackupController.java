@@ -6,7 +6,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import pl.boguszadam.backupapp.file.ArchiveDestination;
-import pl.boguszadam.backupapp.file.ArchivePackage;
 import pl.boguszadam.backupapp.file.ArchiveSource;
 
 import java.io.File;
@@ -14,8 +13,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -40,7 +41,7 @@ public class BackupController implements Initializable {
     private final String extensionOfMainArchive = ".001";
 
     @FXML
-    protected void onBackupButtonClick() throws IOException {
+    protected void onBackupButtonClick() {
         statusText.setText("Już kopiujemy:)");
 
         sourceArchivePackageBackupList
@@ -116,9 +117,7 @@ public class BackupController implements Initializable {
     private void fillDriveLetters(ComboBox<String> drives, String sourcePath) {
         Arrays.stream(File.listRoots()).toList().stream()
                 .filter(drive -> Files.exists(Path.of(drive + sourcePath)))
-                .forEach(drive -> {
-                    drives.getItems().add(drive.toString() + sourcePath);
-                });
+                .forEach(drive -> drives.getItems().add(drive.toString() + sourcePath));
     }
 
     private long getDriveEmptySpaceGB(File drive) throws IOException {
