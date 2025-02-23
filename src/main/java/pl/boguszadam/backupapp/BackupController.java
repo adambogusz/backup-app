@@ -101,9 +101,7 @@ public class BackupController implements Initializable {
         try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
             files
                     .filter(getExtentionPredicate())
-                    .forEach(archivePath -> {
-                        archivePackageBackupList.add(creator.apply(archivePath));
-                    });
+                    .forEach(archivePath -> archivePackageBackupList.add(creator.apply(archivePath)));
         }
     }
 
