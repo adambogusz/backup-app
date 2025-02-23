@@ -13,12 +13,14 @@ import java.util.stream.Stream;
 public class ArchivePackage implements Archive {
     private final Path pathOfZipFile;
     private long size;
+    private int numberOfArchives;
     private Map<Path, Long> mapOfFiles = new HashMap<>();
 
     public ArchivePackage(Path pathOfZipFile) {
         this.pathOfZipFile = pathOfZipFile;
         addArchivesToMap();
-        this.size = size();
+        this.size = countSize();
+        this.numberOfArchives = countNumberOfArchives();
     }
 
     private void addArchivesToMap() {
@@ -44,8 +46,13 @@ public class ArchivePackage implements Archive {
     }
 
     @Override
-    public long size() {
+    public long countSize() {
         return mapOfFiles.values().stream()
                 .reduce(0L, Long::sum);
+    }
+
+    @Override
+    public int countNumberOfArchives() {
+        return mapOfFiles.size();
     }
 }

@@ -5,6 +5,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import pl.boguszadam.backupapp.file.ArchiveDestination;
 import pl.boguszadam.backupapp.file.ArchiveSource;
@@ -20,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+@Getter
 public class BackupController implements Initializable {
     @FXML
     private Label statusText;
@@ -35,6 +38,9 @@ public class BackupController implements Initializable {
 
     @FXML
     private ListView<String> destinationBackupList;
+
+    @FXML
+    private ProgressBar progressBar;
 
     private final List<ArchiveSource> sourceArchivePackageBackupList = new ArrayList<>();
     private final List<ArchiveDestination> destinationArchivePackageBackupList = new ArrayList<>();
@@ -53,32 +59,46 @@ public class BackupController implements Initializable {
                                     .orElse(new ArchiveDestination(Path.of(destinationDrives.getSelectionModel().getSelectedItem(), "Backup2DVD 2026-02-22 04;00;26 (Pełna).zip")));
                             oldestArchive.delete();
                         }
-                        archivePackageSource.move(Path.of(destinationDrives.getSelectionModel().getSelectedItem()));
+                        archivePackageSource.move(Path.of(destinationDrives.getSelectionModel().getSelectedItem()), progressBar);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
     }
 
-    @SneakyThrows
     @FXML
-    protected void onSourceDriveChange() {
-            fillBackupList(sourceArchivePackageBackupList, sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem(), ArchiveSource::new);
+    protected void onCancelButtonClick() {
+
     }
 
     @SneakyThrows
     @FXML
-    protected void onDestinationDriveChange() throws IOException {
-        fillBackupList(destinationArchivePackageBackupList, destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem(), ArchiveDestination::new);
+    protected void onSourceDriveChange() {
+        refreshBackupList(sourceArchivePackageBackupList, sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem(), ArchiveSource::new);
+    }
+
+    @SneakyThrows
+    @FXML
+    protected void onDestinationDriveChange() {
+        refreshBackupList(destinationArchivePackageBackupList, destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem(), ArchiveDestination::new);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         fillDriveLetters(sourceDrives, "burn");
         fillDriveLetters(destinationDrives, "burn\\burned");
+        progressBar.setProgress(0.0d);
     }
 
-    private <T> void fillBackupList(List<T> archivePackageBackupList, ListView<String> backupList, String pathWithBackups, Function<Path, T> creator) throws IOException {
+    private <T> void refreshBackupList(List<T> archivePackageBackupList, ListView<String> backupList, String pathWithBackups, Function<Path, T> creator) throws IOException {
+        clearListView(archivePackageBackupList, backupList);
+        fillPackageList(archivePackageBackupList, pathWithBackups, creator);
+        archivePackageBackupList
+                .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
+
+    }
+
+    private <T> void fillPackageList(List<T> archivePackageBackupList, String pathWithBackups, Function<Path, T> creator) throws IOException {
         try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
             files
                     .filter(getExtentionPredicate())
@@ -86,9 +106,11 @@ public class BackupController implements Initializable {
                         archivePackageBackupList.add(creator.apply(archivePath));
                     });
         }
-        archivePackageBackupList
-                .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
+    }
 
+    private <T> void clearListView(List<T> archivePackageBackupList, ListView<String> backupList) {
+        archivePackageBackupList.clear();
+        backupList.getItems().clear();
     }
 
     private Predicate<Path> getExtentionPredicate() {
