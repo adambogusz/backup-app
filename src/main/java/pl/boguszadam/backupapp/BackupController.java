@@ -5,8 +5,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import lombok.SneakyThrows;
 import pl.boguszadam.backupapp.file.ArchiveDestination;
 import pl.boguszadam.backupapp.file.ArchiveSource;
+import pl.boguszadam.backupapp.file.Extension;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -35,13 +38,13 @@ public class BackupController implements Initializable {
 
     private final List<ArchiveSource> sourceArchivePackageBackupList = new ArrayList<>();
     private final List<ArchiveDestination> destinationArchivePackageBackupList = new ArrayList<>();
-    private final String extensionOfMainArchive = ".zip";
 
     @FXML
     protected void onBackupButtonClick() {
         statusText.setText("Już kopiujemy:)");
 
-        sourceArchivePackageBackupList
+        sourceArchivePackageBackupList.stream()
+                .filter(archiveSource -> archiveSource.toString().equals(sourceBackupList.getSelectionModel().getSelectedItem()))
                 .forEach(archivePackageSource -> {
                     try {
                         if(archivePackageSource.getSize() * 2L > getDriveEmptySpaceMB((Path.of(destinationDrives.getSelectionModel().getSelectedItem())).toFile())) {
@@ -57,14 +60,16 @@ public class BackupController implements Initializable {
                 });
     }
 
+    @SneakyThrows
     @FXML
-    protected void onSourceDriveChange() throws IOException {
-        fillSourceBackupList(sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem());
+    protected void onSourceDriveChange() {
+            fillBackupList(sourceArchivePackageBackupList, sourceBackupList, sourceDrives.getSelectionModel().getSelectedItem(), ArchiveSource::new);
     }
 
+    @SneakyThrows
     @FXML
     protected void onDestinationDriveChange() throws IOException {
-        fillDestinationBackupList(destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem());
+        fillBackupList(destinationArchivePackageBackupList, destinationBackupList, destinationDrives.getSelectionModel().getSelectedItem(), ArchiveDestination::new);
     }
 
     @Override
@@ -73,41 +78,21 @@ public class BackupController implements Initializable {
         fillDriveLetters(destinationDrives, "burn\\burned");
     }
 
-    private void fillSourceBackupList(ListView<String> backupList, String pathWithBackups) throws IOException {
+    private <T> void fillBackupList(List<T> archivePackageBackupList, ListView<String> backupList, String pathWithBackups, Function<Path, T> creator) throws IOException {
         try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
             files
                     .filter(getExtentionPredicate())
                     .forEach(archivePath -> {
-                        try {
-                            sourceArchivePackageBackupList.add(new ArchiveSource(archivePath));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        archivePackageBackupList.add(creator.apply(archivePath));
                     });
         }
-        sourceArchivePackageBackupList
+        archivePackageBackupList
                 .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
 
-    }
-
-    private void fillDestinationBackupList(ListView<String> backupList, String pathWithBackups) throws IOException {
-        try (Stream<Path> files = Files.list(Path.of(pathWithBackups))) {
-            files
-                    .filter(getExtentionPredicate())
-                    .forEach(archivePath -> {
-                        try {
-                            destinationArchivePackageBackupList.add(new ArchiveDestination(archivePath));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-        }
-        destinationArchivePackageBackupList
-                .forEach(archivePackage -> backupList.getItems().add(archivePackage.toString()));
     }
 
     private Predicate<Path> getExtentionPredicate() {
-        return f -> f.toString().toLowerCase().endsWith(extensionOfMainArchive);
+        return f -> f.toString().toLowerCase().endsWith(Extension.ZIP.getExtension());
     }
 
     private void fillDriveLetters(ComboBox<String> drives, String sourcePath) {

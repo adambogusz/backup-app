@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ArchiveSource extends ArchivePackage {
-    public ArchiveSource(Path pathOfZipFile) throws IOException {
+    public ArchiveSource(Path pathOfZipFile) {
         super(pathOfZipFile);
     }
 

@@ -15,13 +15,13 @@ public class ArchivePackage implements Archive {
     private long size;
     private Map<Path, Long> mapOfFiles = new HashMap<>();
 
-    public ArchivePackage(Path pathOfZipFile) throws IOException {
+    public ArchivePackage(Path pathOfZipFile) {
         this.pathOfZipFile = pathOfZipFile;
         addArchivesToMap();
         this.size = size();
     }
 
-    private void addArchivesToMap() throws IOException {
+    private void addArchivesToMap() {
         try(Stream<Path> files = Files.list(Path.of(pathOfZipFile.getParent().toString()))) {
             files
                     .filter(file -> file.toString().contains(pathOfZipFile.toString().substring(0, pathOfZipFile.toString().lastIndexOf('.'))))
@@ -32,6 +32,8 @@ public class ArchivePackage implements Archive {
                             throw new RuntimeException(e);
                         }
                     });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
