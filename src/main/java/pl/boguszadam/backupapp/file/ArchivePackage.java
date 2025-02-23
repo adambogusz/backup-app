@@ -10,11 +10,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Getter
-public class ArchivePackage implements Archive {
+public abstract class ArchivePackage implements Archive {
     private final Path pathOfZipFile;
     private long size;
     private int numberOfArchives;
     private Map<Path, Long> mapOfFiles = new HashMap<>();
+    public static boolean isCanceled = false;
 
     public ArchivePackage(Path pathOfZipFile) {
         this.pathOfZipFile = pathOfZipFile;

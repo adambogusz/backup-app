@@ -24,8 +24,8 @@
                   onAction="#onDestinationDriveChange"/>
         <ListView fx:id="sourceBackupList" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
         <ListView fx:id="destinationBackupList" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        <Label fx:id="statusText" GridPane.columnSpan="2" GridPane.rowIndex="3" />
-        <Button text="Wykonaj backup!" GridPane.halignment="LEFT" GridPane.columnIndex="0" GridPane.rowIndex="4" onAction="#onBackupButtonClick"/>
+        <Label fx:id="statusText" GridPane.columnSpan="2" GridPane.valignment="CENTER" GridPane.rowIndex="3" />
+        <Button fx:id="backupButton" text="Wykonaj backup!" GridPane.halignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="4" onAction="#onBackupButtonClick"/>
         <Button text="Anuluj!" GridPane.columnIndex="1" GridPane.rowIndex="4" onAction="#onCancelButtonClick"/>
     </GridPane>
 
