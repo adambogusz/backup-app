@@ -10,18 +10,21 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Getter
-public class ArchivePackage implements Archive {
+public abstract class ArchivePackage implements Archive {
     private final Path pathOfZipFile;
     private long size;
+    private int numberOfArchives;
     private Map<Path, Long> mapOfFiles = new HashMap<>();
+    public static boolean isCanceled = false;
 
-    public ArchivePackage(Path pathOfZipFile) throws IOException {
+    public ArchivePackage(Path pathOfZipFile) {
         this.pathOfZipFile = pathOfZipFile;
         addArchivesToMap();
-        this.size = size();
+        this.size = countSize();
+        this.numberOfArchives = countNumberOfArchives();
     }
 
-    private void addArchivesToMap() throws IOException {
+    private void addArchivesToMap() {
         try(Stream<Path> files = Files.list(Path.of(pathOfZipFile.getParent().toString()))) {
             files
                     .filter(file -> file.toString().contains(pathOfZipFile.toString().substring(0, pathOfZipFile.toString().lastIndexOf('.'))))
@@ -32,6 +35,8 @@ public class ArchivePackage implements Archive {
                             throw new RuntimeException(e);
                         }
                     });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -42,8 +47,13 @@ public class ArchivePackage implements Archive {
     }
 
     @Override
-    public long size() {
+    public long countSize() {
         return mapOfFiles.values().stream()
                 .reduce(0L, Long::sum);
+    }
+
+    @Override
+    public int countNumberOfArchives() {
+        return mapOfFiles.size();
     }
 }

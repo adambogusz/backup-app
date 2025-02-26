@@ -8,6 +8,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ProgressBar?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="pl.boguszadam.backupapp.BackupController">
     <padding>
@@ -15,16 +16,18 @@
     </padding>
 
     <GridPane alignment="CENTER">
-        <Label text="Serwer" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass=".label-text"/>
-        <Label text="Dysk zewnętrzny" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-        <ComboBox fx:id="sourceDrives" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="350"
+        <Label text="Serwer" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass=".label-text"/>
+        <Label text="Dysk zewnętrzny" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <ComboBox fx:id="sourceDrives" GridPane.columnIndex="0" GridPane.rowIndex="1" prefWidth="350"
                   onAction="#onSourceDriveChange"/>
-        <ComboBox fx:id="destinationDrives" GridPane.columnIndex="2" GridPane.rowIndex="2" prefWidth="350"
+        <ComboBox fx:id="destinationDrives" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="350"
                   onAction="#onDestinationDriveChange"/>
-        <ListView fx:id="sourceBackupList" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        <ListView fx:id="destinationBackupList" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+        <ListView fx:id="sourceBackupList" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <ListView fx:id="destinationBackupList" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label fx:id="statusText" GridPane.columnSpan="2" GridPane.valignment="CENTER" GridPane.rowIndex="3" />
+        <Button text="Wykonaj backup!" GridPane.halignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="4" onAction="#onBackupButtonClick"/>
+        <Button text="Anuluj!" GridPane.columnIndex="1" GridPane.rowIndex="4" onAction="#onCancelButtonClick"/>
     </GridPane>
 
-    <Label fx:id="statusText"/>
-    <Button text="Wykonaj backup!" onAction="#onBackupButtonClick"/>
+    <ProgressBar fx:id="progressBar" prefWidth="700"/>
 </VBox>

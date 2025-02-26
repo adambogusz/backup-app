@@ -10,7 +10,7 @@ import java.nio.file.Path;
 public class ArchiveDestination extends ArchivePackage {
     private final Integer dateOfBackup;
 
-    public ArchiveDestination(Path pathOfZipFile) throws IOException {
+    public ArchiveDestination(Path pathOfZipFile) {
         super(pathOfZipFile);
         this.dateOfBackup = Integer.parseInt(pathOfZipFile
                 .getFileName()
